@@ -8,7 +8,7 @@ use App\Models\Traits\TenantScoped;
 class FuelRecord extends Model
 {
     use TenantScoped;
-{
+
     protected $fillable = [
         'cooperative_id', 'vehicle_id', 'journey_id', 'driver_id',
         'liters', 'cost', 'provider', 'current_km', 'recorded_at',

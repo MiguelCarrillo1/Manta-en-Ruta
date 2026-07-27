@@ -21,6 +21,6 @@ class Line extends Model
     }
 
     public function cooperative() { return $this->belongsTo(Cooperative::class); }
-    public function stops() { return $this->belongsToMany(Stop::class, 'line_stop')->withPivot('order', 'distance_from_prev', 'estimated_minutes_from_prev')->orderByPivot('order'); }
+    public function stops() { return $this->belongsToMany(Stop::class, 'line_stop')->withPivot('order', 'distance_from_prev', 'estimated_minutes_from_prev', 'tramo')->orderByPivot('order'); }
     public function routeSegments() { return $this->hasMany(RouteSegment::class)->orderBy('sequence'); }
 }

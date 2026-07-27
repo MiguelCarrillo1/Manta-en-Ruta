@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Cooperative;
 
 use App\Http\Controllers\Controller;
+use App\Models\Driver;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -85,5 +86,23 @@ class VehicleController extends Controller
         $vehicle->delete();
 
         return response()->json(['success' => true, 'message' => 'Vehículo desactivado'], 204);
+    }
+
+    public function assignDriver(Request $request, int $id): JsonResponse
+    {
+        $vehicle = Vehicle::byTenant()->findOrFail($id);
+        $driverId = $request->driver_id;
+
+        // Deactivate current assignments
+        $vehicle->drivers()->updateExistingPivot($vehicle->drivers->pluck('id'), ['is_active' => false, 'unassigned_at' => now()]);
+
+        if ($driverId) {
+            $driver = Driver::byTenant()->findOrFail($driverId);
+            $vehicle->drivers()->attach($driver->id, ['is_primary' => true, 'is_active' => true, 'assigned_at' => now()]);
+        }
+
+        $vehicle->load('drivers:id,full_name');
+
+        return response()->json(['success' => true, 'data' => $vehicle, 'message' => $driverId ? 'Conductor asignado' : 'Conductor desasignado']);
     }
 }

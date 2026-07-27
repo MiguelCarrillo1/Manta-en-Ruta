@@ -13,7 +13,7 @@ class LineController extends Controller
     {
         $lines = Line::byTenant()
             ->where('is_active', true)
-            ->withCount(['stops'])
+            ->with(['stops' => fn($q) => $q->select('stops.id', 'stops.name', 'stops.latitude', 'stops.longitude')->orderByPivot('order')])
             ->get()
             ->map(fn($l) => [
                 'id' => $l->id,
@@ -21,7 +21,14 @@ class LineController extends Controller
                 'code' => $l->code,
                 'color' => $l->color,
                 'direction' => $l->direction,
-                'stops_count' => $l->stops_count,
+                'stops' => $l->stops->map(fn($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'latitude' => $s->latitude,
+                    'longitude' => $s->longitude,
+                    'order' => $s->pivot->order,
+                    'tramo' => $s->pivot->tramo,
+                ]),
                 'active_buses_count' => Vehicle::whereHas('activeJourney')->whereHas('line', fn($q) => $q->where('lines.id', $l->id))->count(),
             ]);
 

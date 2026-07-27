@@ -4,8 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Cooperative;
 use App\Models\Driver;
+use App\Models\FuelRecord;
+use App\Models\Journey;
 use App\Models\Line;
 use App\Models\PointOfInterest;
+use App\Models\Position;
 use App\Models\Role;
 use App\Models\Stop;
 use App\Models\User;
@@ -46,6 +49,22 @@ class MantaDataSeeder extends Seeder
             ['name' => 'José Ruiz', 'email' => 'jose.r@coopmanta.com', 'phone' => '0985555555'],
             ['name' => 'Rosa Delgado', 'email' => 'rosa.d@coopmanta.com', 'phone' => '0986666666'],
         ];
+
+        // Operator user
+        $operatorRole = Role::where('name', 'operador')->first();
+        $operatorUser = User::create([
+            'name' => 'Carlos Montero',
+            'email' => 'operador@coopmanta.com',
+            'password' => bcrypt('Operador123!'),
+            'phone' => '0987777777',
+            'is_active' => true,
+        ]);
+        UserCooperative::create([
+            'user_id' => $operatorUser->id,
+            'cooperative_id' => $coop->id,
+            'role_id' => $operatorRole->id,
+            'is_active' => true,
+        ]);
 
         foreach ($driverNames as $i => $d) {
             $user = User::create([
@@ -99,28 +118,39 @@ class MantaDataSeeder extends Seeder
             ]);
         }
 
-        // ======== STOPS (Manta real coordinates) ========
+        // ======== STOPS (solo Línea 6 y Línea 17 FETUM) ========
         $stopData = [
             ['name' => 'Terminal Terrestre', 'address' => 'Av. Jaime Chávez y Av. 4', 'latitude' => -0.9511, 'longitude' => -80.7097],
-            ['name' => 'Mercado Central', 'address' => 'Calle 10 y Av. 2', 'latitude' => -0.9489, 'longitude' => -80.7128],
-            ['name' => 'Parque Central', 'address' => 'Av. 4 y Calle 9', 'latitude' => -0.9489, 'longitude' => -80.7153],
-            ['name' => 'Catedral de Manta', 'address' => 'Av. 4 y Calle 11', 'latitude' => -0.9497, 'longitude' => -80.7161],
-            ['name' => 'Hospital Regional', 'address' => 'Av. Eloy Alfaro', 'latitude' => -0.9531, 'longitude' => -80.7119],
-            ['name' => 'ULEAM (Universidad)', 'address' => 'Av. Universitaria', 'latitude' => -0.9447, 'longitude' => -80.7244],
-            ['name' => 'Malecón Escénico', 'address' => 'Av. Malecón', 'latitude' => -0.9422, 'longitude' => -80.7247],
-            ['name' => 'Barbasquillo', 'address' => 'Calle 24 y Av. 24', 'latitude' => -0.9319, 'longitude' => -80.7314],
-            ['name' => 'Tarqui (Playa)', 'address' => 'Av. Tarqui', 'latitude' => -0.9392, 'longitude' => -80.7411],
-            ['name' => 'Los Esteros', 'address' => 'Av. 6 y Calle 20', 'latitude' => -0.9600, 'longitude' => -80.7200],
-            ['name' => 'El Palmar', 'address' => 'Vía El Palmar', 'latitude' => -0.9344, 'longitude' => -80.6933],
-            ['name' => 'Ciudadela Eloy Alfaro', 'address' => 'Av. Eloy Alfaro Norte', 'latitude' => -0.9550, 'longitude' => -80.7100],
-            ['name' => 'San Mateo', 'address' => 'Vía San Mateo', 'latitude' => -0.9172, 'longitude' => -80.7483],
-            ['name' => 'Colegio 5 de Junio', 'address' => 'Av. 24 y Calle 13', 'latitude' => -0.9408, 'longitude' => -80.7192],
-            ['name' => 'Paseo Shopping', 'address' => 'Av. Flavio Reyes', 'latitude' => -0.9425, 'longitude' => -80.7283],
-            ['name' => 'Centro Comercial La Piazza', 'address' => 'Av. Malecón y Calle 24', 'latitude' => -0.9411, 'longitude' => -80.7275],
-            ['name' => 'Barrio Jocay', 'address' => 'Av. Jocay', 'latitude' => -0.9367, 'longitude' => -80.7183],
-            ['name' => 'Miraflores', 'address' => 'Calle 15 y Av. 15', 'latitude' => -0.9439, 'longitude' => -80.7089],
-            ['name' => 'Cuerpo de Bomberos', 'address' => 'Av. 2 y Calle 14', 'latitude' => -0.9467, 'longitude' => -80.7133],
-            ['name' => 'RECOPE (Refinería)', 'address' => 'Vía a la Refinería', 'latitude' => -0.8683, 'longitude' => -80.7306],
+
+            // Línea 6 FETUM - Ida
+            ['name' => 'Coliseo Complejo Tohallí', 'address' => 'Vía a San Mateo', 'latitude' => -0.97541, 'longitude' => -80.75702],
+            ['name' => 'Redondel de la Tejedora', 'address' => 'Vía San Mateo / Av. Circunvalación', 'latitude' => -0.97010, 'longitude' => -80.75051],
+            ['name' => 'Av. 4 de Noviembre', 'address' => 'Frente a Paseo Shopping Manta', 'latitude' => -0.96342, 'longitude' => -80.71854],
+            ['name' => 'Sector Nuevo Tarqui', 'address' => 'Calle 4 / Calle 1', 'latitude' => -0.95790, 'longitude' => -80.71021],
+            ['name' => 'Plaza Mar', 'address' => 'Av. Malecón - Frente a Playita Mía', 'latitude' => -0.94905, 'longitude' => -80.70991],
+            ['name' => 'Parada del Megaparque', 'address' => 'Av. Malecón', 'latitude' => -0.94589, 'longitude' => -80.72241],
+
+            // Línea 6 FETUM - Retorno
+            ['name' => 'Mall del Pacífico', 'address' => 'Av. Malecón', 'latitude' => -0.94931, 'longitude' => -80.72895],
+            ['name' => 'Calle 15 y Av. 24', 'address' => 'Sector Mercado Central / Centro', 'latitude' => -0.95155, 'longitude' => -80.71882],
+            ['name' => 'Av. Flavio Reyes y Calle 20', 'address' => 'Zona comercial y bancaria', 'latitude' => -0.95251, 'longitude' => -80.73812],
+            ['name' => 'Av. Flavio Reyes - ULEAM', 'address' => 'Frente a la ULEAM', 'latitude' => -0.95408, 'longitude' => -80.74315],
+            ['name' => 'Redondel de la Epam', 'address' => 'Vía Circunvalación Sur', 'latitude' => -0.95874, 'longitude' => -80.74681],
+
+            // Línea 17 FETUM - Ida
+            ['name' => 'Intercambiador de Inepaca', 'address' => 'Av. 4 de Noviembre / Av. La Cultura', 'latitude' => -0.95681, 'longitude' => -80.70752],
+            ['name' => 'Entrada al Espigón', 'address' => 'Av. Malecón - Terminal Portuario', 'latitude' => -0.94723, 'longitude' => -80.71805],
+            ['name' => 'Mega Parque', 'address' => 'Av. Malecón - Frente a Tarqui', 'latitude' => -0.94589, 'longitude' => -80.72241],
+            ['name' => 'Av. Flavio Reyes y Calle 15', 'address' => 'Antiguo sector Madera Fina', 'latitude' => -0.95112, 'longitude' => -80.73347],
+            ['name' => 'Vía Circunvalación - Manta 2000', 'address' => 'Entrada a Ur. Manta 2000', 'latitude' => -0.95945, 'longitude' => -80.74901],
+            ['name' => 'Coliseo Lorgio Pinoargote', 'address' => 'Vía Manta - San Mateo - Ciudad Deportiva', 'latitude' => -0.97012, 'longitude' => -80.75544],
+
+            // Línea 17 FETUM - Regreso
+            ['name' => 'Redondel de los Eléctricos', 'address' => 'Vía Circunvalación', 'latitude' => -0.96310, 'longitude' => -80.74712],
+            ['name' => 'Supercapi Marketplace', 'address' => 'Av. Circunvalación', 'latitude' => -0.95683, 'longitude' => -80.74551],
+            ['name' => 'Calle 12 y Av. 24', 'address' => 'Conexión Barrio Stella Maris', 'latitude' => -0.95078, 'longitude' => -80.73012],
+            ['name' => 'Banco del Pacífico', 'address' => 'Av. Malecón - Frente al Yacht Club', 'latitude' => -0.94892, 'longitude' => -80.72653],
+            ['name' => 'Av. Puerto - Aeropuerto', 'address' => 'Frente a Playita Mía / Tarqui', 'latitude' => -0.94901, 'longitude' => -80.70994],
         ];
 
         $stops = [];
@@ -135,13 +165,10 @@ class MantaDataSeeder extends Seeder
             ]);
         }
 
-        // ======== LINES ========
+        // ======== LINES (solo L6 y L17) ========
         $lineData = [
-            ['name' => 'Centro - Tarqui', 'code' => 'R1', 'description' => 'Recorre el centro hasta la playa de Tarqui', 'color' => '#1a73e8', 'direction' => 'outbound'],
-            ['name' => 'Centro - Barbasquillo', 'code' => 'R2', 'description' => 'Del centro al sector de Barbasquillo', 'color' => '#e74c3c', 'direction' => 'outbound'],
-            ['name' => 'Terminal - ULEAM', 'code' => 'R3', 'description' => 'Terminal Terrestre a la Universidad ULEAM', 'color' => '#27ae60', 'direction' => 'outbound'],
-            ['name' => 'Los Esteros - El Palmar', 'code' => 'R4', 'description' => 'Cruza la ciudad de Los Esteros a El Palmar', 'color' => '#f39c12', 'direction' => 'outbound'],
-            ['name' => 'San Mateo - Centro', 'code' => 'R5', 'description' => 'San Mateo hasta el centro de Manta', 'color' => '#9b59b6', 'direction' => 'outbound'],
+            ['name' => 'Línea 6 FETUM', 'code' => 'L6', 'description' => 'Coliseo Tohallí → Flavio Reyes / Centro (Circular)', 'color' => '#8e44ad', 'direction' => 'circular'],
+            ['name' => 'Línea 17 FETUM', 'code' => 'L17', 'description' => 'Terminal Terrestre → Ciudad Deportiva (Circular)', 'color' => '#d35400', 'direction' => 'circular'],
         ];
 
         $lines = [];
@@ -152,20 +179,74 @@ class MantaDataSeeder extends Seeder
             ]));
         }
 
-        // ======== LINE-STOP assignments ========
-        $lineStops = [
-            1 => [1, 2, 3, 4, 6, 7, 9],          // Centro - Tarqui
-            2 => [3, 4, 7, 8, 14, 15, 16],        // Centro - Barbasquillo
-            3 => [1, 5, 12, 18, 13, 6],            // Terminal - ULEAM
-            4 => [10, 5, 12, 3, 20, 11],           // Los Esteros - El Palmar
-            5 => [19, 9, 8, 7, 3, 2, 1],           // San Mateo - Centro
+        // Línea 6: Ida stops 1-6 (indices 1-6), Retorno stops 7-12 (indices 7-11, 1)
+        $line6 = $lines[0];
+        $l6Ida = [1, 2, 3, 4, 5, 6];
+        $l6Ret = [7, 8, 9, 10, 11, 1];
+        foreach ($l6Ida as $order => $stopIdx) {
+            $line6->stops()->attach($stops[$stopIdx]->id, ['order' => $order + 1, 'tramo' => 'ida']);
+        }
+        foreach ($l6Ret as $order => $stopIdx) {
+            $line6->stops()->attach($stops[$stopIdx]->id, ['order' => $order + 7, 'tramo' => 'regreso']);
+        }
+
+        // Línea 17: Ida stops 1-9 (indices 0,12-17), Retorno stops 10-15 (indices 18-22, 0)
+        $line17 = $lines[1];
+        $l17Ida = [0, 12, 13, 14, 7, 15, 10, 16, 17];
+        $l17Ret = [18, 19, 20, 21, 22, 0];
+        foreach ($l17Ida as $order => $stopIdx) {
+            $line17->stops()->attach($stops[$stopIdx]->id, ['order' => $order + 1, 'tramo' => 'ida']);
+        }
+        foreach ($l17Ret as $order => $stopIdx) {
+            $line17->stops()->attach($stops[$stopIdx]->id, ['order' => $order + 10, 'tramo' => 'regreso']);
+        }
+
+        // ======== ASSIGN DRIVERS TO VEHICLES & LINES ========
+        // Driver 0 (Luis Zambrano) → L6, Driver 3 (Ana Macías) → L17
+        $assignment = [
+            ['driver' => $drivers[0], 'vehicle' => $vehicles[0], 'line' => $line6],
+            ['driver' => $drivers[3], 'vehicle' => $vehicles[3], 'line' => $line17],
         ];
 
-        foreach ($lineStops as $lineIdx => $stopIndices) {
-            $line = $lines[$lineIdx - 1];
-            foreach ($stopIndices as $order => $stopIdx) {
-                $stop = $stops[$stopIdx - 1];
-                $line->stops()->attach($stop->id, ['order' => $order + 1]);
+        foreach ($assignment as $a) {
+            $a['vehicle']->drivers()->attach($a['driver']->id, ['is_primary' => true, 'is_active' => true]);
+            $a['vehicle']->update(['line_id' => $a['line']->id, 'status' => 'in_journey']);
+
+            $journey = Journey::create([
+                'cooperative_id' => $coop->id,
+                'vehicle_id' => $a['vehicle']->id,
+                'driver_id' => $a['driver']->id,
+                'start_km' => 1250,
+                'start_at' => now()->subHours(2),
+                'status' => 'active',
+            ]);
+
+            // Seed initial positions along the route
+            $route = $a['line']->stops()
+                ->select('stops.id', 'stops.latitude', 'stops.longitude')
+                ->withPivot('order', 'tramo')
+                ->orderByPivot('order')
+                ->get();
+
+            foreach ($route as $i => $stop) {
+                Position::create([
+                    'cooperative_id' => $coop->id,
+                    'vehicle_id' => $a['vehicle']->id,
+                    'journey_id' => $journey->id,
+                    'latitude' => $stop->latitude,
+                    'longitude' => $stop->longitude,
+                    'speed' => rand(20, 35),
+                    'heading' => 0,
+                    'recorded_at' => now()->subHours(2)->addMinutes($i * 3),
+                ]);
+
+                if ($i === 3) {
+                    $a['vehicle']->update([
+                        'last_known_lat' => $stop->latitude,
+                        'last_known_lng' => $stop->longitude,
+                        'last_position_at' => now(),
+                    ]);
+                }
             }
         }
 

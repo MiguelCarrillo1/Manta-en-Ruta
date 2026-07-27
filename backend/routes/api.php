@@ -36,6 +36,17 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/recovery', [AuthController::class, 'recovery']);
 
+    // Static public endpoints (no auth required, no tenant scope)
+    Route::prefix('public')->group(function () {
+        Route::get('lines', [LineController::class, 'index']);
+        Route::get('lines/{id}', [LineController::class, 'show']);
+        Route::get('stops', [StopController::class, 'index']);
+        Route::get('stops/{id}', [StopController::class, 'show']);
+        Route::get('pois', [PoiController::class, 'index']);
+        Route::get('pois/{id}', [PoiController::class, 'show']);
+        Route::get('pois/categories/list', [PoiController::class, 'categories']);
+    });
+
     // Auth required
     Route::middleware(['auth:api'])->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
@@ -66,10 +77,14 @@ Route::prefix('v1')->group(function () {
 
         // Tenant-scoped routes
         Route::middleware(['tenant'])->group(function () {
-            // Cooperative admin (Superadmin & Gerente & Admin)
+            // Cooperative admin (Superadmin & Gerente & Admin) - full CRUD
             Route::middleware(['role:superadmin,gerente,admin'])->group(function () {
-                Route::apiResource('cooperative/vehicles', \App\Http\Controllers\Api\V1\Cooperative\VehicleController::class);
-                Route::apiResource('cooperative/drivers', \App\Http\Controllers\Api\V1\Cooperative\DriverController::class);
+                Route::post('cooperative/vehicles', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'store']);
+                Route::put('cooperative/vehicles/{id}', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'update']);
+                Route::delete('cooperative/vehicles/{id}', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'destroy']);
+                Route::post('cooperative/drivers', [\App\Http\Controllers\Api\V1\Cooperative\DriverController::class, 'store']);
+                Route::put('cooperative/drivers/{id}', [\App\Http\Controllers\Api\V1\Cooperative\DriverController::class, 'update']);
+                Route::delete('cooperative/drivers/{id}', [\App\Http\Controllers\Api\V1\Cooperative\DriverController::class, 'destroy']);
                 Route::apiResource('cooperative/lines', CooperativeLineController::class);
                 Route::post('cooperative/lines/{id}/stops', [CooperativeLineController::class, 'assignStops']);
                 Route::apiResource('cooperative/stops', CooperativeStopController::class);
@@ -87,6 +102,15 @@ Route::prefix('v1')->group(function () {
                 Route::get('cooperative/emergencies', [CooperativeEmergencyController::class, 'index']);
                 Route::get('cooperative/emergencies/{id}', [CooperativeEmergencyController::class, 'show']);
                 Route::patch('cooperative/emergencies/{id}', [CooperativeEmergencyController::class, 'update']);
+            });
+
+            // Cooperative read + assign (Superadmin, Gerente, Admin, Operador)
+            Route::middleware(['role:superadmin,gerente,admin,operador'])->group(function () {
+                Route::get('cooperative/vehicles', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'index']);
+                Route::get('cooperative/vehicles/{id}', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'show']);
+                Route::post('cooperative/vehicles/{id}/assign-driver', [\App\Http\Controllers\Api\V1\Cooperative\VehicleController::class, 'assignDriver']);
+                Route::get('cooperative/drivers', [\App\Http\Controllers\Api\V1\Cooperative\DriverController::class, 'index']);
+                Route::get('cooperative/drivers/{id}', [\App\Http\Controllers\Api\V1\Cooperative\DriverController::class, 'show']);
             });
 
             // Cooperative monitoring & operations (adds Operador)
@@ -116,19 +140,13 @@ Route::prefix('v1')->group(function () {
                 Route::patch('vehicles/{id}/wifi', [DriverVehicleStatusController::class, 'toggleWifi']);
             });
 
-            // User module (Usuario & all roles)
+            // User module (Usuario & all roles) - realtime features
             Route::prefix('user')->group(function () {
                 Route::get('search', [SearchController::class, 'search']);
                 Route::get('search/nearby', [SearchController::class, 'nearby']);
-                Route::get('lines', [LineController::class, 'index']);
-                Route::get('lines/{id}', [LineController::class, 'show']);
-                Route::get('stops', [StopController::class, 'index']);
-                Route::get('stops/{id}', [StopController::class, 'show']);
-                Route::get('pois/categories/list', [PoiController::class, 'categories']);
-                Route::get('pois', [PoiController::class, 'index']);
-                Route::get('pois/{id}', [PoiController::class, 'show']);
                 Route::get('buses/active', [BusController::class, 'activeBuses']);
                 Route::get('buses/nearby', [BusController::class, 'nearbyBuses']);
+                Route::get('buses/{id}/eta', [BusController::class, 'eta']);
                 Route::get('buses/{id}', [BusController::class, 'show']);
             });
         });

@@ -97,5 +97,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(MantaDataSeeder::class);
+        $this->call(TestDataSeeder::class);
     }
 }

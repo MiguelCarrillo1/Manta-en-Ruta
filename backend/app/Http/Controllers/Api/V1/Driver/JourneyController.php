@@ -21,7 +21,7 @@ class JourneyController extends Controller
 
         $journey = Journey::where('driver_id', $driver->id)
             ->where('status', 'active')
-            ->with('vehicle:id,plate,brand,model,has_ac,has_wifi,ac_status,wifi_status,status,last_known_lat,last_known_lng')
+            ->with(['vehicle:id,plate,brand,model,has_ac,has_wifi,ac_status,wifi_status,status,last_known_lat,last_known_lng', 'vehicle.line:id,name,code,color'])
             ->first();
 
         return response()->json(['success' => true, 'data' => $journey]);
@@ -66,7 +66,7 @@ class JourneyController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $journey->load('vehicle:id,plate,brand,model'),
+            'data' => $journey->load(['vehicle:id,plate,brand,model', 'vehicle.line:id,name,code,color']),
             'message' => 'Jornada iniciada exitosamente',
         ], 201);
     }
